@@ -1,0 +1,16 @@
+{
+  "name": "BookerT",
+  "version": "1.0.0",
+  "description": "Booking software for the web",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Will McCambley",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "sequelize": "^3.18.0",
+    "sqlite3": "^3.1.1"
+  }
+}
