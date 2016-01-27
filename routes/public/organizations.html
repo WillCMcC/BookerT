@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+    <script src='/app.js'></script>
+    <script src='/organizationViewCntrl.js'></script>
+    <style src='style.css'></style>
+
+
+  </head>
+  <body ng-app='orgs'>
+    <div ng-controller='orgCtrl' class='organization'>
+      <h1>{{title}}</h1>
+      <div ng-repeat='org in organizations' >
+        <br>
+        {{org.ownerName}} :
+        {{org.accomodations.length}} : {{org.uuid}}
+        <div class='accomodations'>
+          <p>Accomodations</p>
+          <div ng-repeat='acc in org.accomodations'>
+            {{acc.uuid}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

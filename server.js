@@ -4,12 +4,22 @@ var port = process.env.PORT || 6969;
 
 //  Requirements
 var http = require("http");
-var db = require('./sequelize.js');
+var models = require("./models");
+var app = require("./routes/routes.js");
+
+
+
+// var testing = require('./dbTesting.js');
+
 
 // init server
-var server = http.createServer();
 
 // server listen on port
-server.listen(port, function(){
-	console.log('Listening on port ' + port);
+
+
+models.sequelize.sync().then(function () {
+	var server = http.createServer(app);
+	server.listen(port, function(){
+		console.log('Listening on port ' + port);
+	});
 });

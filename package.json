@@ -9,7 +9,13 @@
   "author": "Will McCambley",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^0.8.5",
+    "body-parser": "^1.14.2",
     "express": "^4.13.4",
+    "express-session": "^1.13.0",
+    "multer": "^1.1.0",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
     "sequelize": "^3.18.0",
     "sqlite3": "^3.1.1"
   }
