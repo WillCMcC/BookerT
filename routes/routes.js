@@ -6,10 +6,13 @@ var bodyParser = require('body-parser');
 var multer = require('multer'); // v1.0.5
 var bcrypt = require('bcrypt');
 var upload = multer(); // for parsing multipart/form-data
+var cookieParser = require('cookie-parser')
+app.use(cookieParser())
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
 var session = require('express-session')
+
 app.use(session({
   secret: 'test'
 }))
@@ -48,8 +51,13 @@ passport.use(new LocalStrategy( {
         else
           // if everything is OK, return null as the error
           // and the authenticated user
+          req.login(user,function(err){
+                  if(err){
+                      return next(err);
+                  }
+                  return done(null,user);
+              });
           console.log("login success");
-          return done(null, user);
   }).error(function(err){
     // if command executed with error
     return done(err);
@@ -143,10 +151,16 @@ authRouter.post("/new/user", upload.array(), function(req, res){
 
 authRouter.post('/login', upload.array(),
 function(req, res){
-  console.log(req.body)
-  passport.authenticate('local', function(err, user, info){
+  console.log(req.user);
+  if(req.user){
+    console.log('already logged in')
     res.send(200)
-  })(req, res)
+  }
+  else{
+    passport.authenticate('local', function(err, user, info){
+      res.send(200)
+    })(req, res)
+  }
 });
 
 app.use('/auth', authRouter);
