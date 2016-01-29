@@ -30,9 +30,12 @@ app.use(passport.session());
 passport.use(new LocalStrategy( {
   passReqToCallback: true,
   usernameField: 'email',
-  passwordField: 'password'
 },
   function(req, username, password, done) {
+    console.log(req.body)
+    console.log(username)
+    console.log(password)
+
     /* get the username and password from the input arguments of the function */
 
     // query the user from the database
@@ -129,7 +132,7 @@ app.use('/api', router)
 var authRouter  = express.Router();
 
 authRouter.post("/new/user", upload.array(), function(req, res){
-  console.log(req.body)
+  // console.log(req.body)
   var newUser = models.user.build({
     firstName: req.body.firstName,
     lastName: req.body.lastName,
@@ -139,26 +142,67 @@ authRouter.post("/new/user", upload.array(), function(req, res){
   bcrypt.hash(req.body.password, 8, function(err, hash) {
     console.log('hash')
     newUser.password = hash;
-    newUser.save()
-    res.status(200).send(newUser);
+    newUser.save().then(function(){
+      // req.body.username = newUser.email;
+      // req.body.password = newUser.password;
+      // console.log(req.body)
+
+      passport.authenticate('local', function(err, user, info){
+        console.log(err);
+        console.log(user);
+        console.log(info);
+
+        res.redirect('/')
+      })(req, res)
+
+    })
+
   });
 
 })
 //
+var viewRoute  = express.Router();
+
+viewRoute.get("/",  function(req, res){
+  console.log(req.user)
+  if(!req.user){
+    res.redirect('/login')
+  }
+  else
+    res.sendFile('/public/home.html', { root: __dirname } )
+  })
 
 
+viewRoute.get("/login",  function(req, res){
+  if(!req.user){
+    res.sendFile('/public/login.html', { root: __dirname } )
+  }if(req.user){
+    res.redirect('/')
+  }
+})
+viewRoute.get("/signup",  function(req, res){
+  if(!req.user){
+    res.sendFile('/public/signUp.html', { root: __dirname } )
+  }if(req.user){
+    res.redirect('/')
+  }
+})
 
+app.use( viewRoute);
 
 authRouter.post('/login', upload.array(),
 function(req, res){
-  console.log(req.user);
+  console.log(req.body);
   if(req.user){
     console.log('already logged in')
     res.send(200)
   }
   else{
     passport.authenticate('local', function(err, user, info){
-      res.send(200)
+      console.log(err);
+      console.log(user);
+      console.log(info);
+      res.redirect('/')
     })(req, res)
   }
 });
