@@ -5,6 +5,7 @@ var app = express();
 var bodyParser = require('body-parser');
 var multer = require('multer'); // v1.0.5
 var bcrypt = require('bcrypt');
+var url = require('url');
 var upload = multer(); // for parsing multipart/form-data
 var cookieParser = require('cookie-parser')
 app.use(cookieParser())
@@ -32,9 +33,7 @@ passport.use(new LocalStrategy( {
   usernameField: 'email',
 },
   function(req, username, password, done) {
-    console.log(req.body)
-    console.log(username)
-    console.log(password)
+
 
     /* get the username and password from the input arguments of the function */
 
@@ -60,7 +59,6 @@ passport.use(new LocalStrategy( {
                   }
                   return done(null,user);
               });
-          console.log("login success");
   }).error(function(err){
     // if command executed with error
     return done(err);
@@ -89,11 +87,36 @@ var router  = express.Router();
 
 //  return all origanizations at /api/organizations
 router.get('/organizations', function(req, res) {
-  models.organization.findAll({
-      include: [ models.accomodation ]
-    }).then(function(organizations) {
-      res.status(200).send(organizations)
-    });
+  var get_params = url.parse(req.url, true).query;
+  if (Object.keys(get_params).length == 0){
+    models.organization.findAll({
+        include: [ models.accomodation ]
+      }).then(function(organizations) {
+        res.status(200).send(organizations)
+      });
+  }else{
+    var queryobj = {};
+    keys = Object.keys(get_params);
+    console.log(get_params)
+
+    if(keys[0] == 'uuid'){
+      models.organization.find({
+        where: {uuid: get_params[keys[0]]},
+          include: [ models.accomodation ]
+        }).then(function(organizations) {
+          res.status(200).send(organizations)
+        });
+    }
+    if(keys[0] == 'orgUrl'){
+      models.organization.find({
+        where: {orgUrl: get_params[keys[0]]},
+          include: [ models.accomodation ]
+        }).then(function(organizations) {
+          res.status(200).send(organizations)
+        });
+    }
+
+  }
 });
 
 //  return all accomodations at /api/accomodations
@@ -104,25 +127,55 @@ router.get('/accomodations', function(req, res) {
     });
 });
 
+
+
 // new organizations at /api/new/organization
 router.post('/new/organization', upload.array(), function(req, res) {
-  models.organization.create(req.body).then(function(organizations) {
-    res.sendStatus(200);
+  var newOrg = models.organization.create(req.body).then(function(organizations) {
+    var owner = models.user.find({where: {
+      uuid: req.user.uuid,
+    }}).then(function(owners){
+      organizations.setUser(owners),
+      res.redirect('/');
+    })
   });
 });
+router.get('/delete/org/:uuid', upload.array(), function(req, res) {
+    models.organization.find({where: {
+      uuid: req.params.uuid,
+    }}).then(function(org){
+      org.destroy().then(function(){
+        res.redirect('/');
+      })
+    })
+  });
+
 
 // new accomodations at /api/new/accomodations
 router.post('/new/accomodation', upload.array(), function(req, res) {
   // new accomodation
   var newAccomodation = models.accomodation.build({
-      numPeople: req.body.numPeople,
+      numBeds: req.body.numBeds,
+      numReservations: req.body.numReservations,
       price: req.body.price,
+      name: req.body.name,
   })
   // save and relate to organization
   newAccomodation.save().then(function(){
     models.organization.find({where: {uuid: req.body.orgUUID}}).then(function(org){
+      console.log(org)
       newAccomodation.setOrganization(org);
-      res.sendStatus(200);
+      res.redirect('/org?uuid=' + org.uuid);
+    });
+  })
+})
+router.post('/new/rental', upload.array(), function(req, res) {
+  // new rental
+  var newRental = models.Rental.create(req.body).then(function(gotem){
+  // save and relate to organization
+    models.accomodation.find({where: {uuid: req.body.accUUID}}).then(function(acc){
+      gotem.setAccomodation(acc)
+      console.log(gotem.toJSON())
     });
   })
 })
@@ -140,7 +193,6 @@ authRouter.post("/new/user", upload.array(), function(req, res){
   })
 
   bcrypt.hash(req.body.password, 8, function(err, hash) {
-    console.log('hash')
     newUser.password = hash;
     newUser.save().then(function(){
       // req.body.username = newUser.email;
@@ -148,9 +200,7 @@ authRouter.post("/new/user", upload.array(), function(req, res){
       // console.log(req.body)
 
       passport.authenticate('local', function(err, user, info){
-        console.log(err);
-        console.log(user);
-        console.log(info);
+
 
         res.redirect('/')
       })(req, res)
@@ -164,13 +214,19 @@ authRouter.post("/new/user", upload.array(), function(req, res){
 var viewRoute  = express.Router();
 
 viewRoute.get("/",  function(req, res){
-  console.log(req.user)
   if(!req.user){
     res.redirect('/login')
   }
   else
     res.sendFile('/public/home.html', { root: __dirname } )
   })
+  viewRoute.get("/visit/:org",  function(req, res){
+    if(req.params.org){
+      res.sendFile('/public/niceOrg.html', { root: __dirname } )
+    }
+    else
+      res.redirect('/')
+    })
 
 
 viewRoute.get("/login",  function(req, res){
@@ -187,24 +243,45 @@ viewRoute.get("/signup",  function(req, res){
     res.redirect('/')
   }
 })
+viewRoute.get("/org",  function(req, res){
+  models.organization.findAll({
+    where:{
+      uuid: req.query.org,
+    },
+      include: [ models.accomodation ]
+    }).then(function(organizations) {
+      res.sendFile('/public/orgs.html', { root: __dirname } )
+    });
+})
 
-app.use( viewRoute);
+app.use(viewRoute);
 
 authRouter.post('/login', upload.array(),
 function(req, res){
-  console.log(req.body);
   if(req.user){
-    console.log('already logged in')
     res.send(200)
   }
   else{
     passport.authenticate('local', function(err, user, info){
-      console.log(err);
-      console.log(user);
-      console.log(info);
       res.redirect('/')
     })(req, res)
   }
+});
+authRouter.get('/acct', upload.array(),
+function(req, res){
+  if(req.user){
+    res.send(req.user)
+  }
+  else{
+    res.redirect('/')
+  }
+});
+authRouter.get('/logout', upload.array(),
+function(req, res){
+  if(req.isAuthenticated()){
+    req.logout();
+  }
+    res.redirect('/');
 });
 
 app.use('/auth', authRouter);

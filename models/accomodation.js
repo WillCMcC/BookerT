@@ -8,7 +8,9 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.UUIDV4(),
       },
     price: DataTypes.INTEGER,
-    numPeople: DataTypes.INTEGER,
+    numBeds: DataTypes.INTEGER,
+    numReservations: DataTypes.INTEGER,
+    name: DataTypes.STRING,
   },
     {
       freezeTableName: true,

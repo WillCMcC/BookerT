@@ -1,1 +1,40 @@
-hello home
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+    <script src='/app.js'></script>
+    <script src='/organizationViewCntrl.js'></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+  </head>
+
+  <body ng-controller='orgCtrl' ng-app='orgs'>
+    <div class = 'greeting'>
+    <h1>Hello {{user.firstName}}</h1>
+  </div>
+  <p ><input type="submit" name="commit" value="New organization" ng-click='newOrgTime = !newOrgTime' ng-show='!newOrgTime' ng-init='!newOrgTime'></p>
+    <form method="post" action="/api/new/organization" ng-show='newOrgTime'>
+           <p><input type="text" name="ownerName" value="" placeholder="Name of Establishment"></p>
+           <p><input type="text" name="orgUrl" value="" placeholder="Desired URL"></p>
+           <p class="submit"><input type="submit" name="commit" value="New organization" ng-click='newOrgTime = !newOrgTime'></p>
+           <p><input type="button" value="Never Mind" ng-click='newOrgTime = !newOrgTime'></p>
+
+    </form>
+    <div  class='organization'>
+      <h2>{{title}}</h2>
+      <div ng-repeat='org in organizations' ng-if='(org.userUuid == user.uuid )' >
+        <br>
+        <a href='visit/{{org.orgUrl}}'>{{org.ownerName}}</a> -
+        <a href='org/?uuid={{org.uuid}}'>Org Admin</a> -
+        <a href='api/delete/org/{{org.uuid}}'>Delete</a>
+        <div class='accomodations'>
+          <h3>Accomodations</h3>
+          <div ng-repeat='acc in org.accomodations'>
+            {{acc.name}} : ${{acc.price}} / night, sleeps {{acc.numPeople}}
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <a href='/auth/logout'>Logout</a>
+  </body>
+</html>

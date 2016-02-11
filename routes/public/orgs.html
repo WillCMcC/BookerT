@@ -1,0 +1,35 @@
+  <html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+    <script src='/app.js'></script>
+    <script src='/organizationViewCntrl.js'></script>
+    <style src='style.css'></style>
+
+
+  </head>
+
+  <body ng-app='orgs' ng-controller='orgCtrl' >
+    <div  ng-if='(org.userUuid == user.uuid )' >
+      <br>
+      <a href='/visit/{{org.orgUrl}}'>{{org.ownerName}}</a> -
+      <a href='/'>Home</a>
+      <div class='accomodations'>
+        <h2>Accomodations</h2>
+        <form method="post" action="/api/new/accomodation">
+          <p><input type="text" name="name" value="" placeholder="Name"></p>
+               <p><input type="text" name="price" value="" placeholder="Price"></p>
+               <p><input type="text" name="numBeds" value="" placeholder="Number of Beds"></p>
+               <p><input type="text" name="numReservations" value="" placeholder="Number of Reservations"></p>
+               <p><input type="text" name="orgUUID" value='{{org.uuid}}' placeholder="Number of Beds" ng-show='false'></p>
+
+               <p class="submit"><input type="submit" name="commit" value="New Accomodation"></p>
+        </form>
+        <div ng-repeat='acc in org.accomodations'>
+          {{acc.name}} : ${{acc.price}} / night, sleeps {{acc.numBeds}}. {{acc.numReservations}} available.
+        </div>
+      </div>
+
+    </div>
+
+  </body>
+</html>

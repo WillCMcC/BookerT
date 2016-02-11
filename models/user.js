@@ -16,6 +16,11 @@ var User = sequelize.define('user', {
 
  },{
     freezeTableName: true,
+    classMethods : {
+      associate: function(models){
+        User.hasMany(models.organization);
+      }
+    }
 }
 )
 return User;
