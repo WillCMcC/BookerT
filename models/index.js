@@ -7,6 +7,7 @@ var sequelize = new Sequelize('db',null, null,
 {
     dialect: 'sqlite',
     storage: 'db.sqlite',
+    logging: false,
 })
 
 var db        = {};
@@ -23,7 +24,6 @@ fs
 
 Object.keys(db).forEach(function(modelName) {
   if ("associate" in db[modelName]) {
-    console.log(modelName)
     db[modelName].associate(db);
   }
 });

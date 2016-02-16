@@ -1,15 +1,17 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var rental = sequelize.define('Rental', {
+  var rental = sequelize.define('rental', {
     uuid: {
       primaryKey: true,
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4(),
       },
-    startDate: DataTypes.INTEGER,
-    endDate: DataTypes.INTEGER,
+    dateRange: DataTypes.STRING,
     email: DataTypes.STRING,
+    startDate: DataTypes.STRING,
+    endDate: DataTypes.STRING,
+
   },
     {
       freezeTableName: true,

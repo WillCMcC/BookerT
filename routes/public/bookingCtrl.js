@@ -3,27 +3,52 @@ app.controller('bookingCtrl', function ($scope, $http, $window, $document, $loca
 
 
 
-
   $scope.formMessage = ('Book your nights!');
+  $scope.validateObj = {};
+$http.get('/api/rentals').success(function(data){
+    console.log(data)
+      $scope.reservations = data;
+      for(var i=0; i < $scope.reservations.length; i++){
+        // console.log($scope.reservations[i])
+        newRentalArr = [];
+        var rstartString = $scope.reservations[i].startDate;
+        var rendString = $scope.reservations[i].endDate;
+        var rstartArray = rstartString.split('/');
+        var rendArray = rendString.split('/');
+        var rstart = moment(rstartArray[0] + " " + rstartArray[1] + " " + rstartArray[2], "MM DD YYYY").format('X');
+        var rstartRef = moment(moment(rstartArray[0] + " " + rstartArray[1] + " " + rstartArray[2], "MM DD YYYY"));
+        var rend = moment(rendArray[0] + " " + rendArray[1] + " " + rendArray[2], "MM DD YYYY").format('X');
 
-  $scope.reservations = [];
+        while(rstartRef.format('X') <= rend){
+          newRentalArr.push(rstartRef.format('X'));
+          rstartRef = rstartRef.add(1, 'd');
+        }
+        for(var t=0;t<newRentalArr.length;t++){
+          if($scope.validateObj[newRentalArr[t]]){
+              $scope.validateObj[newRentalArr[t]] ++;
+          }else{
+            $scope.validateObj[newRentalArr[t]] = 1;
+          }
+
+        }
+  }
+});
   var currentRes = {};
-
       var datePicker = $('input[name="daterange"]').daterangepicker({
         autoUpdateInput: true,
         isInvalidDate: function(date){
-          for(var i=0; i< $scope.reservations.length; i++){
-            if($scope.reservations[i].startDate <= date.format('X') && $scope.reservations[i].endDate >= date.format('X')){
+          console.log($scope.currentAcc)
+            if(!$scope.validateObj[date.format('X')] || $scope.validateObj[date.format('X')] < 1){
+              return false;
+            }else{
               return true;
             }
-          }
-          return false;
+
         }
       }, function(start, end, label) {
-        var startRef = start.format('X');
-        var currentDate = start;
+        var currentDate = moment(start);
         var dayCheckArray = []
-        while(currentDate.format('X') < end.format('X')){
+        while(currentDate.format('x') < end.format('X')){
           currentDate = currentDate.add(1, 'd')
           dayCheckArray.push(currentDate.format('X'))
         }
@@ -38,29 +63,24 @@ app.controller('bookingCtrl', function ($scope, $http, $window, $document, $loca
           }
         }
         if(goodRes){
-          $scope.reservations.push({
-            startDate: startRef,
-            endDate: end.format('X'),
-          })
-          $scope.date =   $scope.reservations[$scope.reservations.length - 1];
-          console.log($scope.date)
+
         }else{
         }
 
       })
       $('#daterange').on('apply.daterangepicker', function(ev, picker) {
         console.log($('#daterange').val())
-        $scope.date = picker;
       });
       $scope.submitThis = function($event, acc){
         console.log(acc)
         $scope.rental.dateRange = $('#daterange').val();
         $scope.rental.accUUID = acc.uuid;
         console.log($('#daterange').val());
-        console.log($scope.rental);
+        $scope.rental.startDate = $scope.rental.dateRange.slice(0, $scope.rental.dateRange.indexOf('-') - 1)
+        $scope.rental.endDate = $scope.rental.dateRange.slice($scope.rental.dateRange.indexOf('-') + 2, $scope.rental.dateRange.length)
+
         $http.post('/api/new/rental', $scope.rental);
       }
-
 
 
 

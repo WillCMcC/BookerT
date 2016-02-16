@@ -1,5 +1,7 @@
 var Sequelize = require('sequelize')
 var models  = require('../models');
+var validate  = require('./dateRangeValidation.js');
+
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
@@ -7,7 +9,7 @@ var multer = require('multer'); // v1.0.5
 var bcrypt = require('bcrypt');
 var url = require('url');
 var upload = multer(); // for parsing multipart/form-data
-var cookieParser = require('cookie-parser')
+var cookieParser = require('cookie-parser');
 app.use(cookieParser())
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
@@ -15,7 +17,9 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 var session = require('express-session')
 
 app.use(session({
-  secret: 'test'
+  secret: 'test',
+  resave: true,
+  saveUninitialized: true
 }))
 
 var passport = require('passport');
@@ -127,6 +131,14 @@ router.get('/accomodations', function(req, res) {
     });
 });
 
+//  return all accomodations at /api/accomodations
+router.get('/rentals', function(req, res) {
+  models.rental.findAll({
+    }).then(function(accomodations) {
+      res.status(200).send(accomodations)
+    });
+});
+
 
 
 // new organizations at /api/new/organization
@@ -171,13 +183,15 @@ router.post('/new/accomodation', upload.array(), function(req, res) {
 })
 router.post('/new/rental', upload.array(), function(req, res) {
   // new rental
-  var newRental = models.Rental.create(req.body).then(function(gotem){
-  // save and relate to organization
-    models.accomodation.find({where: {uuid: req.body.accUUID}}).then(function(acc){
-      gotem.setAccomodation(acc)
-      console.log(gotem.toJSON())
-    });
-  })
+  validate.validateRental(req.body, res)
+
+  // if(validate.validateRental(req.body.startDate, req.body.endDate, req.body.accUUID)){
+  //   console.log('true')
+  // }else{
+  //   console.log('bad')
+  // }
+
+
 })
 // app use api router
 app.use('/api', router)

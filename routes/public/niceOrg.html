@@ -32,9 +32,9 @@
           <div ng-repeat='acc in org.accomodations'>
             {{acc.name}} : ${{acc.price}} / night, sleeps {{acc.numBeds}}
             <div>
-              <p ng-click='showCal = !showCal'>{{formMessage}}</p>
-              <form ng-controller='bookingCtrl'>
-                    <input  type="text" name="daterange" id='daterange' ng-model='rental.date'>
+              <p ng-click='showCal = !showCal'>Book</p>
+              <form ng-controller='bookingCtrl' ng-if='showCal'>
+                    <input  type="text" name="daterange" id='daterange' >
                     <div>{{data.date}}</div>
                     <input type="text" name="email"  placeholder="Email" ng-model='rental.email'>
 
