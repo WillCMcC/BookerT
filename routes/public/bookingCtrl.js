@@ -5,9 +5,7 @@ app.controller('bookingCtrl', function ($scope, $http, $window, $document, $loca
 
   $scope.formMessage = ('Book your nights!');
   $scope.validateObj = {};
-$http.get('/api/rentals').success(function(data){
-    console.log(data)
-      $scope.reservations = data;
+    $scope.reservations = $scope.myAcc.rentals
       for(var i=0; i < $scope.reservations.length; i++){
         // console.log($scope.reservations[i])
         newRentalArr = [];
@@ -32,13 +30,11 @@ $http.get('/api/rentals').success(function(data){
 
         }
   }
-});
   var currentRes = {};
       var datePicker = $('input[name="daterange"]').daterangepicker({
         autoUpdateInput: true,
         isInvalidDate: function(date){
-          console.log($scope.currentAcc)
-            if(!$scope.validateObj[date.format('X')] || $scope.validateObj[date.format('X')] < 1){
+            if(!$scope.validateObj[date.format('X')] || $scope.validateObj[date.format('X')] < $scope.myAcc.numReservations){
               return false;
             }else{
               return true;
@@ -69,17 +65,18 @@ $http.get('/api/rentals').success(function(data){
 
       })
       $('#daterange').on('apply.daterangepicker', function(ev, picker) {
-        console.log($('#daterange').val())
       });
       $scope.submitThis = function($event, acc){
-        console.log(acc)
         $scope.rental.dateRange = $('#daterange').val();
         $scope.rental.accUUID = acc.uuid;
-        console.log($('#daterange').val());
         $scope.rental.startDate = $scope.rental.dateRange.slice(0, $scope.rental.dateRange.indexOf('-') - 1)
         $scope.rental.endDate = $scope.rental.dateRange.slice($scope.rental.dateRange.indexOf('-') + 2, $scope.rental.dateRange.length)
 
-        $http.post('/api/new/rental', $scope.rental);
+        $http.post('/api/new/rental', $scope.rental).then(function successCallback(response) {
+              console.log('good')
+            }, function errorCallback(response) {
+              console.log('bad')
+            })
       }
 
 

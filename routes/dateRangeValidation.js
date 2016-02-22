@@ -70,7 +70,7 @@ console.log(dayCheckArray)
         }else{
           console.log('overbooked: ' + acc.name + ", " + dayCheckArray[i] + ", " + validateObj[dayCheckArray[i]])
           console.log('rental bad')
-          res.send('failure')
+          res.status(500).send('Bad Booking!');
           return false;
         }
       }else{
@@ -82,7 +82,7 @@ console.log(dayCheckArray)
     // save and relate to organization
     console.log('saving');
       models.accomodation.find({where: {uuid: body.accUUID}}).then(function(acc){
-        gotem.setAccomodation(acc)
+        acc.addRental(gotem)
         res.send('success')
       });
     })

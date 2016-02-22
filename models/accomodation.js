@@ -17,6 +17,7 @@ module.exports = function(sequelize, DataTypes) {
       classMethods : {
         associate: function(models){
           Accomodation.belongsTo(models.organization);
+          Accomodation.hasMany(models.rental);
         }
       }
 

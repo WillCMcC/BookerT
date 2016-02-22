@@ -94,7 +94,9 @@ router.get('/organizations', function(req, res) {
   var get_params = url.parse(req.url, true).query;
   if (Object.keys(get_params).length == 0){
     models.organization.findAll({
-        include: [ models.accomodation ]
+        include: [{ model: models.accomodation,
+        include: [models.rental]
+      }]
       }).then(function(organizations) {
         res.status(200).send(organizations)
       });
@@ -104,18 +106,20 @@ router.get('/organizations', function(req, res) {
     console.log(get_params)
 
     if(keys[0] == 'uuid'){
-      models.organization.find({
-        where: {uuid: get_params[keys[0]]},
-          include: [ models.accomodation ]
+      models.organization.findAll({
+          include: [{ model: models.accomodation,
+          include: [models.rental]
+        }]
         }).then(function(organizations) {
           res.status(200).send(organizations)
         });
     }
     if(keys[0] == 'orgUrl'){
-      models.organization.find({
-        where: {orgUrl: get_params[keys[0]]},
-          include: [ models.accomodation ]
-        }).then(function(organizations) {
+      models.organization.findAll({
+          include: [{ model: models.accomodation,
+          include: [{model: models.rental}]
+        }]
+      }).then(function(organizations) {
           res.status(200).send(organizations)
         });
     }
@@ -133,10 +137,28 @@ router.get('/accomodations', function(req, res) {
 
 //  return all accomodations at /api/accomodations
 router.get('/rentals', function(req, res) {
+  var get_params = url.parse(req.url, true).query;
+  if (Object.keys(get_params).length == 0){
+    models.rental.findAll({
+    }).then(function(rentals) {
+        res.status(200).send(rentals)
+      });
+  }else{
+    var queryobj = {};
+    keys = Object.keys(get_params);
+    console.log(get_params)
+    if(keys[0] == 'uuid'){
+      models.rental.find({
+        where: {uuid: get_params[keys[0]]},
+      }).then(function(rental) {
+          res.status(200).send(rental)
+        });
+    }
   models.rental.findAll({
     }).then(function(accomodations) {
       res.status(200).send(accomodations)
     });
+}
 });
 
 

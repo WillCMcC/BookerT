@@ -19,7 +19,7 @@ if(url.length > 1){
   console.log(theUuid)
   $http.get('/api/organizations?uuid=' + theUuid)
     .success(function(data, status, headers, config) {
-      $scope.org = data;
+      $scope.org = data[0];
       console.log(data)
     })
 }
